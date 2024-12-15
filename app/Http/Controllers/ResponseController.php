@@ -14,39 +14,50 @@ class ResponseController extends Controller
 {
     public function index()
     {
-        // Ambil semua laporan dengan relasi user dan response
-        $reports = Report::with('user', 'responses')->orderBy('created_at', 'desc')->get();
-
+        // Ambil ID provinsi yang terkait dengan staff yang sedang login
+        $staffProvince = Auth::user()->staffProvince; // Ambil relasi staffProvince
+        $staffProvinceId = $staffProvince->province ?? null; // Ambil ID provinsi (bukan nama provinsi)
+        
+        // Jika ID provinsi tersedia
+        if ($staffProvinceId) {
+            // Ambil laporan yang terkait dengan provinsi staff
+            $reports = Report::with('user', 'responses')
+                ->where('province', $staffProvinceId)  // Filter laporan berdasarkan ID provinsi staff
+                ->orderBy('created_at', 'desc')
+                ->get();
+        } else {
+            // Jika tidak ada provinsi yang terkait dengan staff
+            $reports = collect(); // Kosongkan laporan jika tidak ada provinsi
+        }
+        
         // Ambil data lokasi dari API berdasarkan ID
         foreach ($reports as $report) {
-            // Ambil nama provinsi
             $report->province_name = $this->getLocationName("provinces", $report->province);
-
-            // Ambil nama kabupaten
             $report->regency_name = $this->getLocationName("regencies/{$report->province}", $report->regency);
-
-            // Ambil nama kecamatan
             $report->subdistrict_name = $this->getLocationName("districts/{$report->regency}", $report->subdistrict);
-
-            // Ambil nama desa
             $report->village_name = $this->getLocationName("villages/{$report->subdistrict}", $report->village);
         }
-
+        
         // Kirim data ke view staff.index
         return view('staff.index', compact('reports'));
     }
 
     public function update(Request $request, $reportId)
     {
-        // Validate the action (ON_PROCESS or REJECT)
+        // Validasi action (ON_PROCESS atau REJECT)
         $request->validate([
             'action' => 'required|in:ON_PROCESS,REJECT',
         ]);
 
-        // Find the report
+        // Cari laporan berdasarkan ID
         $report = Report::findOrFail($reportId);
 
-        // Update or create a response for the report
+        // Cek apakah laporan ini sesuai dengan provinsi staff
+        if ($report->province != Auth::user()->staffProvince->province) {
+            return back()->with('error', 'Anda tidak memiliki izin untuk menangani laporan ini.');
+        }
+
+        // Update atau buat response untuk laporan
         $response = Responses::updateOrCreate(
             ['report_id' => $report->id],
             [
@@ -55,38 +66,39 @@ class ResponseController extends Controller
             ]
         );
 
-        // If the action is 'ON_PROCESS', redirect to the detail page
+        // Jika action adalah 'ON_PROCESS', arahkan ke halaman detail
         if ($request->action === 'ON_PROCESS') {
             return redirect()->route('staff.detail', $reportId)
                 ->with('success', 'Laporan diproses! Tambahkan rincian di halaman detail.');
         }
 
-        // If the action is 'REJECT', simply go back to the previous page with a success message
+        // Jika action adalah 'REJECT', kembali ke halaman sebelumnya
         return back()->with('success', 'Laporan berhasil ditolak!');
     }
-
-
 
     // Tampilkan halaman detail
     public function show($reportId)
     {
-        // Ambil laporan beserta responses dan user
+        // Cari laporan dengan ID yang diberikan
         $report = Report::with('responses', 'user')->findOrFail($reportId);
 
-        // Ambil response terakhir
-        $response = $report->responses->last(); // atau first() tergantung data yang diinginkan
+        // Cek apakah laporan ini sesuai dengan provinsi staff
+        if ($report->province != Auth::user()->staffProvince->province) {
+            return redirect()->route('staff.index')->with('error', 'Anda tidak memiliki izin untuk melihat laporan ini.');
+        }
 
-        // Ambil nama lokasi (jika diperlukan)
+        // Ambil response terakhir
+        $response = $report->responses->last();
+
+        // Ambil nama lokasi
         $report->province_name = $this->getLocationName("provinces", $report->province);
         $report->regency_name = $this->getLocationName("regencies/{$report->province}", $report->regency);
         $report->subdistrict_name = $this->getLocationName("districts/{$report->regency}", $report->subdistrict);
         $report->village_name = $this->getLocationName("villages/{$report->subdistrict}", $report->village);
 
-        // Kirim data report dan response ke view
+        // Kirim data ke view detail
         return view('staff.detail', compact('report', 'response'));
     }
-
-
 
     private function getLocationName($endpoint, $id)
     {
@@ -125,14 +137,15 @@ class ResponseController extends Controller
 
         return redirect()->back()->with('success', 'Riwayat proses berhasil disimpan!');
     }
+
     public function complete($reportId)
     {
         // Cari laporan beserta responses yang terkait
         $report = Report::with('responses')->findOrFail($reportId);
-        
+
         // Ambil response terakhir
-        $response = $report->responses->last(); 
-    
+        $response = $report->responses->last();
+
         // Pastikan ada response yang terkait dan response_status bukan 'DONE'
         if ($response && $response->response_status !== 'DONE') {
             // Update response_status menjadi 'DONE'
@@ -141,11 +154,10 @@ class ResponseController extends Controller
             // Jika status sudah 'DONE', beri pesan atau logika lain jika perlu
             return redirect()->route('staff.detail', $reportId)->with('info', 'Laporan sudah selesai.');
         }
-    
+
         // Redirect kembali ke halaman detail dengan pesan sukses
         return redirect()->route('staff.detail', $reportId)->with('success', 'Laporan berhasil ditandai sebagai selesai.');
     }
-    
 
     public function deleteProgress($reportId, $progressId)
     {
@@ -162,11 +174,15 @@ class ResponseController extends Controller
         // Redirect kembali ke halaman detail dengan pesan sukses
         return redirect()->route('staff.detail', $reportId)->with('success', 'Riwayat berhasil dihapus!');
     }
+
     public function export(Request $request)
     {
+        // Ambil filter berdasarkan provinsi dan rentang tanggal (jika ada)
         $filter_option = $request->filter_option;
+        $staffProvince = Auth::user()->staffProvince;
+        $staffProvinceId = $staffProvince->province;
 
-        // Logika untuk opsi 'Berdasarkan Tanggal'
+        // Logika untuk opsi 'Berdasarkan Provinsi'
         if ($filter_option == 'date_range') {
             $start_date = $request->start_date;
             $end_date = $request->end_date;
@@ -176,11 +192,11 @@ class ResponseController extends Controller
                 return redirect()->back()->with('error', 'Silakan pilih rentang tanggal.');
             }
 
-            // Export data dalam rentang tanggal
-            return Excel::download(new ReportsExport($start_date, $end_date), 'reports_filtered.xlsx');
+            // Export data dalam rentang tanggal dan sesuai provinsi staff
+            return Excel::download(new ReportsExport($start_date, $end_date, $staffProvinceId), 'reports_filtered.xlsx');
         }
 
         // Jika opsi 'Semua Data'
-        return Excel::download(new ReportsExport(), 'all_reports.xlsx');
+        return Excel::download(new ReportsExport(null, null, $staffProvinceId), 'all_reports.xlsx');
     }
 }

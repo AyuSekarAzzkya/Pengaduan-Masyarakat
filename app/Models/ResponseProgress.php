@@ -17,10 +17,12 @@ class ResponseProgress extends Model
     protected $casts = [
         'histories' => 'array',  // Untuk memastikan Laravel mengonversi data ke array jika kolom bertipe JSON
     ];
-    public function response(): BelongsTo
-{
-    return $this->belongsTo(Responses::class, 'response_id', 'id');
-}
+    // Di dalam model ResponseProgress
+    public function response()
+    {
+        return $this->belongsTo(Responses::class, 'response_id', 'id');
+    }
+
     public function report()
     {
         return $this->belongsTo(Report::class);

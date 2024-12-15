@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Report;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -32,8 +33,13 @@ class User extends Authenticatable
     {
         return $this->hasMany(Report::class);
     }
-    public function provinces()
+    public function staffProvince()
     {
-        return $this->hasMany(StaffProvince::class);
+        return $this->hasOne(StaffProvince::class); // Menghubungkan dengan StaffProvince
     }
+    public function responses()
+    {
+        return $this->hasMany(Responses::class, 'staff_id');
+    }
+    
 }

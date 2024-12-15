@@ -5,6 +5,7 @@
         <h1 class="mb-4">Daftar Pengaduan User</h1>
         <div style="margin-bottom: 10px">
             <!-- Button Export -->
+            <!-- Button Export -->
             <button type="button" class="btn btn-success" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Export ke Excel
             </button>
@@ -25,7 +26,8 @@
                             <div class="modal-body">
                                 <div class="form-group">
                                     <label for="selected_date">Tanggal:</label>
-                                    <input type="date" name="selected_date" id="selected_date" class="form-control">
+                                    <input type="date" name="selected_date" id="selected_date" class="form-control"
+                                        required>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -36,6 +38,7 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
         <!-- Script untuk Aksi Tombol -->

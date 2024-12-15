@@ -74,6 +74,12 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('head.index') }}">Daftar Pengaduan</a>
                                 </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('head.staff') }}">Kelola Akun</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('head.index') }}">Grafik</a>
+                                </li>
                             @endif
                             <li class="nav-item">
                                 <a href="{{ route('logout') }}" class="nav-link">Logout</a>
@@ -90,15 +96,7 @@
     <!-- ======= Main Content ======= -->
     <main id="main" class="main">
         <!-- Page Title and Breadcrumb -->
-        <div class="pagetitle">
-            <h1>@yield('page-title')</h1>
-            <nav>
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('reports.index') }}">Home</a></li>
-                    <li class="breadcrumb-item active">@yield('breadcrumb')</li>
-                </ol>
-            </nav>
-        </div><!-- End Page Title -->
+        
 
         <!-- Dynamic Page Content -->
         @yield('content')

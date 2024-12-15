@@ -56,14 +56,22 @@ class Report extends Model
         $this->attributes['voting'] = json_encode($value); // Menyimpan dalam format JSON
     }
 
-    public function responses(): HasMany
+    public function responses()
     {
         return $this->hasMany(Responses::class, 'report_id', 'id');
     }
 
+
     // Relasi ke ResponseProgress (riwayat respons staff)
-    public function progress(): HasMany
+    // Di dalam model Report
+    public function responseProgress()
     {
-        return $this->hasMany(ResponseProgress::class);
+        return $this->hasManyThrough(ResponseProgress::class, Responses::class, 'report_id', 'response_id', 'id', 'id');
+    }
+
+    // Di dalam model Report, tambahkan relasi staffProvince
+    public function staffProvince()
+    {
+        return $this->hasOne(StaffProvince::class, 'user_id', 'user_id'); // Relasi ke staffProvince
     }
 }

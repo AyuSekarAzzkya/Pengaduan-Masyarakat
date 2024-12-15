@@ -16,12 +16,14 @@ class Responses extends Model
         'staff_id'
 
     ]);
-    public function report(): BelongsTo
+    // Di dalam model Responses
+    public function report()
     {
         return $this->belongsTo(Report::class, 'report_id', 'id');
     }
-    public function progress(): HasMany
+
+    public function progress()
     {
-        return $this->hasMany(ResponseProgress::class, 'response_id');
+        return $this->hasMany(ResponseProgress::class, 'response_id', 'id');
     }
 }
