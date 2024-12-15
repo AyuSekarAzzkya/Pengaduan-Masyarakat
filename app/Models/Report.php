@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Report extends Model
 {
@@ -53,5 +55,15 @@ class Report extends Model
     {
         $this->attributes['voting'] = json_encode($value); // Menyimpan dalam format JSON
     }
-    
+
+    public function responses(): HasMany
+    {
+        return $this->hasMany(Responses::class, 'report_id', 'id');
+    }
+
+    // Relasi ke ResponseProgress (riwayat respons staff)
+    public function progress(): HasMany
+    {
+        return $this->hasMany(ResponseProgress::class);
+    }
 }

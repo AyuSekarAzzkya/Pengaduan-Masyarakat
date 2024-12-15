@@ -31,6 +31,9 @@
                                 <!-- Jumlah Vote -->
                                 <div><i class="fas fa-heart"></i> {{ count(json_decode($report->voting)) }}</div>
                             </div>
+                            <div>
+                                <h1 style="margin-top: 3rem;">{{ $report->type }}</h1>
+                            </div>
                         </div>
                     </div>
                 </div>

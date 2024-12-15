@@ -11,10 +11,13 @@
 
     <!-- Google Fonts -->
     <link href="https://fonts.gstatic.com" rel="preconnect">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i"
+        rel="stylesheet">
 
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
 
     <!-- Vendor CSS Files -->
     <link href="{{ asset('Ltemplate/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
@@ -27,57 +30,6 @@
 
     <!-- Main CSS File -->
     <link href="{{ asset('Ltemplate/assets/css/style.css') }}" rel="stylesheet">
-
-    <style>
-        .navbar {
-            background-color: orange !important;
-            margin-left: 33%;
-        }
-
-        .navbar-nav .nav-link {
-            position: relative;
-            color: white !important;
-        }
-
-        .navbar-nav .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background-color: white;
-            transition: width 0.3s ease-in-out;
-        }
-
-        .navbar-nav .nav-link:hover::after, 
-        .navbar-nav .nav-link.active::after {
-            width: 100%;
-        }
-
-        .navbar-toggler {
-            border-color: white;
-        }
-
-        .navbar-toggler-icon {
-            background-color: white;
-        }
-
-        .btn-danger{
-            margin-left: 11rem;
-        }
-        .btn-danger a {
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn-danger a:hover {
-            text-decoration: underline;
-        }
-    </style>
-
-    <!-- Additional CSS -->
-    @yield('styles')
 </head>
 
 <body>
@@ -95,25 +47,41 @@
         <!-- Navbar -->
         <nav class="navbar navbar-expand-lg">
             <div class="container-fluid">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                      
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('reports.index') }}">Daftar</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{route('reports.create')}}">Pengaduan</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('reports.monitoring') }}">Monitoring</a>
-                        </li>
+                        @if (Auth::check())
+                            @if (Auth::user()->role == 'GUEST')
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('reports.index') }}">Daftar</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('reports.create') }}">Pengaduan</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('reports.monitoring') }}">Monitoring</a>
+                                </li>
+                            @endif
+                            @if (Auth::user()->role == 'STAFF')
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('staff.index') }}">Daftar Pengaduan</a>
+                                </li>
+                            @endif
+                            @if (Auth::user()->role == 'HEAD_STAFF')
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{{ route('head.index') }}">Daftar Pengaduan</a>
+                                </li>
+                            @endif
+                            <li class="nav-item">
+                                <a href="{{ route('logout') }}" class="nav-link">Logout</a>
+                            </li>       
+                        @endif
+                        
                     </ul>
-                    <button class="btn btn-danger me-2">
-                        <a href="{{ route('logout') }}">Logout</a>
-                    </button>
+                   
                 </div>
             </div>
         </nav>
@@ -153,6 +121,12 @@
     <script src="{{ asset('Ltemplate/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('Ltemplate/assets/vendor/chart.js/chart.umd.js') }}"></script>
     <script src="{{ asset('Ltemplate/assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <!-- Main JS File -->
     <script src="{{ asset('Ltemplate/assets/js/main.js') }}"></script>

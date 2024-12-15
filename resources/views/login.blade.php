@@ -22,64 +22,30 @@
                 <h1 class="fst-italic lh-1 mb-4">Pengaduan Masyarakat</h1>
                 <p class="mb-5">Silakan login atau daftar untuk melanjutkan!</p>
 
-                <form method="POST" action="{{ route('loginregister') }}">
+                <form method="POST" action="{{ route('postLogin') }}">
                     @csrf
-                    <!-- Cek apakah form registrasi yang dikirim -->
-                    <div id="formContainer">
-                        @if(!request()->has('register')) 
-                        <!-- Form Login -->
-                        <div class="row input-group-newsletter mb-3">
-                            <div class="col">
-                                <input class="form-control" name="email" id="email" type="email" placeholder="Masukkan alamat email" required />
-                            </div>
+                    <div class="row input-group-newsletter mb-3">
+                        <div class="col">
+                            <input class="form-control" name="email" id="email" type="email" placeholder="Masukkan alamat email" required />
                         </div>
-
-                        <div class="row input-group-newsletter mb-3">
-                            <div class="col">
-                                <input class="form-control" name="password" id="password" type="password" placeholder="Masukkan password" required />
-                            </div>
+                    </div>
+                
+                    <div class="row input-group-newsletter mb-3">
+                        <div class="col">
+                            <input class="form-control" name="password" id="password" type="password" placeholder="Masukkan password" required />
                         </div>
-
-                        <div class="row gx-2">
-                            <div class="col-6">
-                                <button class="btn btn-primary btn-lg w-100" type="submit" name="login">Login</button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-outline-light btn-lg w-100" type="submit" formaction="{{ route('loginregister') }}?register=true">Sign Up</button>
-                            </div>
+                    </div>
+                
+                    <div class="row gx-2">
+                        <div class="col-6">
+                            <button class="btn btn-primary btn-lg w-100" type="submit" name="login">Login</button>
                         </div>
-                        @else
-                        <!-- Form Registrasi -->
-                        <div class="row input-group-newsletter mb-3">
-                            <div class="col">
-                                <input class="form-control" name="email" id="email" type="email" placeholder="Masukkan alamat email" required />
-                            </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-light btn-lg w-100" type="submit" formaction="{{ route('postLogin') }}?register=true">Sign Up</button>
                         </div>
-
-                        <div class="row input-group-newsletter mb-3">
-                            <div class="col">
-                                <input class="form-control" name="password" id="password" type="password" placeholder="Masukkan password" required />
-                            </div>
-                        </div>
-
-                        <div class="row input-group-newsletter mb-3">
-                            <div class="col">
-                                <input class="form-control" name="password_confirmation" id="password_confirmation" type="password" placeholder="Konfirmasi password" required />
-                            </div>
-                        </div>
-
-                        <div class="row gx-2">
-                            <div class="col-6">
-                                <!-- Tombol Sign Up -->
-                                <button class="btn btn-outline-light btn-lg w-100" type="submit" name="register">Sign Up</button>
-                            </div>
-                            <div class="col-6">
-                                <button class="btn btn-primary btn-lg w-100" type="submit" formaction="{{ route('loginregister') }}">Login</button>
-                            </div>
-                        </div>
-                        @endif
                     </div>
                 </form>
+                
             </div>
         </div>
     </div>

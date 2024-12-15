@@ -87,26 +87,26 @@ class ReportController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'statement' => 'required|boolean',
         ]);
-
+    
         // Store image and report data
         $imagePath = $request->file('image')->store('images/reports', 'public');
-
         Report::create([
             'user_id' => Auth::id(),
             'description' => $request->description,
             'type' => $request->type,
-            'province' => $request->province,  // Pastikan kolomnya sesuai
-            'regency' => $request->regency,
-            'subdistrict' => $request->subdistrict,
-            'village' => $request->village,
+            'province' => $request->province,  
+            'regency' => $request->regency,  
+            'subdistrict' => $request->subdistrict,  
+            'village' => $request->village, 
             'voting' => json_encode([]),
-            'viewers' => 0,  // Pastikan kolom viewers ada di tabel laporan
+            'viewers' => 0,  // Kolom viewers
             'image' => $imagePath,
             'statement' => $request->statement,
         ]);
-
+    
         return redirect()->route('reports.create')->with('success', 'Laporan berhasil dikirim!');
     }
+    
 
     public function votes($reportId)
     {

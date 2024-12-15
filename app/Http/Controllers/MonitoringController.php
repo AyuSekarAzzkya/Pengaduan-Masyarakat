@@ -10,46 +10,57 @@ class MonitoringController extends Controller
 {
     public function index()
 {
-    // Ambil semua laporan
-    $reports = Report::all();
+    $reports = Report::with('responses.progress')
+        ->select('id', 'description', 'province', 'regency', 'subdistrict', 'village', 'type', 'image', 'created_at')
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-    // Loop setiap laporan untuk mengambil data lokasi terkait dari API
+    // Ambil data lokasi dari API berdasarkan ID
     foreach ($reports as $report) {
-        // Ambil data lokasi provinsi, kabupaten, kecamatan, desa menggunakan API eksternal
-        $province = $this->getLocationName('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json', $report->province_id);
-        $regency = $this->getLocationName("https://www.emsifa.com/api-wilayah-indonesia/api/regencies/{$report->province_id}.json", $report->regency_id);
-        $subdistrict = $this->getLocationName("https://www.emsifa.com/api-wilayah-indonesia/api/subdistricts/{$report->regency_id}.json", $report->subdistrict_id);
-        $village = $this->getLocationName("https://www.emsifa.com/api-wilayah-indonesia/api/villages/{$report->subdistrict_id}.json", $report->village_id);
+        // Ambil nama provinsi
+        $provinceResponse = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json");
+        $report->province_name = $provinceResponse->successful()
+            ? collect($provinceResponse->json())->firstWhere('id', $report->province)['name'] ?? 'Unknown'
+            : 'Unknown (API Error)';
 
-        // Menambahkan nama lokasi ke laporan
-        $report->province_name = $province;
-        $report->regency_name = $regency;
-        $report->subdistrict_name = $subdistrict;
-        $report->village_name = $village;
+        // Ambil nama kabupaten
+        $regencyResponse = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/regencies/{$report->province}.json");
+        $report->regency_name = $regencyResponse->successful()
+            ? collect($regencyResponse->json())->firstWhere('id', $report->regency)['name'] ?? 'Unknown'
+            : 'Unknown (API Error)';
+
+        // Ambil nama kecamatan
+        $subdistrictResponse = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/districts/{$report->regency}.json");
+        $report->subdistrict_name = $subdistrictResponse->successful()
+            ? collect($subdistrictResponse->json())->firstWhere('id', $report->subdistrict)['name'] ?? 'Unknown'
+            : 'Unknown (API Error)';
+
+        // Ambil nama desa
+        $villageResponse = Http::get("https://www.emsifa.com/api-wilayah-indonesia/api/villages/{$report->subdistrict}.json");
+        $report->village_name = $villageResponse->successful()
+            ? collect($villageResponse->json())->firstWhere('id', $report->village)['name'] ?? 'Unknown'
+            : 'Unknown (API Error)';
     }
 
     return view('reports.monitoring', compact('reports'));
 }
 
-// Fungsi untuk mengambil nama lokasi dari API
-private function getLocationName($url, $id)
+public function destroy(Report $report)
 {
-    // Ambil data dari API menggunakan Http request
-    $response = Http::get($url);
-
-    // Pastikan respons berhasil
-    if ($response->successful()) {
-        $data = $response->json();
-
-        // Cari lokasi berdasarkan ID yang diterima
-        foreach ($data as $item) {
-            if ($item['id'] == $id) {
-                return $item['name']; // Kembalikan nama lokasi
-            }
+    // Jika respons kosong, berarti laporan belum ada respons
+    if ($report->responses->isEmpty()) {
+        // Jika status laporan adalah 'pending' atau 'reject', maka laporan bisa dihapus
+        if ($report->status == 'pending' || $report->status == 'reject') {
+            $report->delete();
+            return redirect()->route('reports.index')->with('success', 'Laporan berhasil dihapus.');
+        } else {
+            // Jika status bukan 'pending' atau 'reject', tampilkan pesan error
+            return redirect()->route('reports.index')->with('error', 'Laporan ini tidak dapat dihapus karena statusnya sudah diproses.');
         }
     }
 
-    return 'Unknown'; // Kembalikan 'Unknown' jika tidak ditemukan
+    // Jika sudah ada respons, tidak bisa dihapus
+    return redirect()->route('reports.index')->with('error', 'Laporan ini tidak dapat dihapus karena sudah ada respons.');
 }
-    
+
 }

@@ -10,47 +10,56 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    // Menampilkan halaman login
+    // Menampilkan halaman logi
+
     public function index()
     {
         return view('login');
     }
-
+    
     // Menangani login dan registrasi
     public function postLoginOrRegistration(Request $request)
     {
-        // Cek apakah form untuk registrasi yang dikirim
-        if ($request->has('register')) {
-            // Logika registrasi tanpa field 'name'
-            $request->validate([
-                'email' => 'required|email|unique:users', // Validasi email
-                'password' => 'required|min:6|confirmed', // Validasi password dan konfirmasi
-            ]);
-
-            // Membuat user baru tanpa nama
+        // Validasi data login
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+        ]);
+    
+        // Cek apakah email sudah terdaftar
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            // Jika user tidak ditemukan, buat akun baru
             $user = User::create([
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'password' => Hash::make($request->password), // Enkripsi password
+                'role' => 'GUEST', // Default role 'GUEST' untuk user baru
             ]);
-
-            // Login otomatis setelah registrasi
-            Auth::login($user);
-
-            return redirect()->route('reports.index')->with('success', 'Pendaftaran berhasil!');
         } else {
-            // Logika login
-            $request->validate([
-                'email' => 'required|email',
-                'password' => 'required',
-            ]);
-
-            if (Auth::attempt($request->only('email', 'password'))) {
-                return redirect()->route('reports.index');
+            // Jika user ditemukan, periksa apakah password benar
+            if (!Hash::check($request->password, $user->password)) {
+                return redirect()->route('login')->with('error', 'Email atau password salah.');
             }
-
-            return redirect()->route('login')->with('error', 'Email atau password salah.');
+        }
+    
+        // Login otomatis setelah registrasi atau login
+        Auth::login($user);
+    
+        // Arahkan ke halaman yang sesuai berdasarkan role pengguna
+        if (Auth::user()->role == 'STAFF') {
+            return redirect()->route('staff.index')->with('success', 'Selamat datang, Staff!');
+        } elseif (Auth::user()->role == 'GUEST') {
+            return redirect()->route('reports.index')->with('success', 'Selamat datang!');
+        } elseif (Auth::user()->role =='HEAD_STAFF') {
+            return redirect()->route('head.index')->with('success', 'Selamat datang');
+        }else {
+            Auth::logout(); // Logout jika role tidak sesuai
+            return redirect()->route('login')->with('error', 'Akses ditolak!');
         }
     }
+    
+    
 
     // Logout
     public function logout()

@@ -193,6 +193,53 @@ h6 {
   border-color: #cfe2ff;
 }
 
+.navbar {
+    background-color: orange !important;
+    margin-left: 33%;
+}
+
+.navbar-nav .nav-link {
+    position: relative;
+    color: white !important;
+}
+
+.navbar-nav .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: white;
+    transition: width 0.3s ease-in-out;
+}
+
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+    width: 100%;
+}
+
+.navbar-toggler {
+    border-color: white;
+}
+
+.navbar-toggler-icon {
+    background-color: white;
+}
+
+.btn-danger {
+    margin-left: 11rem;
+}
+
+.btn-danger a {
+    color: white;
+    text-decoration: none;
+}
+
+.btn-danger a:hover {
+    text-decoration: underline;
+}
+
 .bg-secondary-light {
   background-color: #e2e3e5;
   border-color: #e2e3e5;
