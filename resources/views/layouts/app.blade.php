@@ -72,9 +72,6 @@
                             @endif
                             @if (Auth::user()->role == 'HEAD_STAFF')
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('head.index') }}">Daftar Pengaduan</a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link" href="{{ route('head.staff') }}">Kelola Akun</a>
                                 </li>
                                 <li class="nav-item">
