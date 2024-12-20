@@ -15,10 +15,8 @@ class UserController extends Controller
         return view('login');
     }
     
-    // Menangani login dan registrasi
     public function postLoginOrRegistration(Request $request)
     {
-        // Validasi data login
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|min:6',
@@ -31,7 +29,7 @@ class UserController extends Controller
             // Jika user tidak ditemukan, buat akun baru
             $user = User::create([
                 'email' => $request->email,
-                'password' => Hash::make($request->password), // Enkripsi password
+                'password' => Hash::make($request->password),
                 'role' => 'GUEST', // Default role 'GUEST' untuk user baru
             ]);
         } else {
@@ -60,10 +58,8 @@ class UserController extends Controller
     // Logout
     public function logout()
     {
-        Auth::logout();
-        return redirect('login')->with('success', 'Anda telah berhasil logout');
+        return redirect()->route('login')->with('success', 'Anda telah berhasil logout');
     }
 
-    // Menampilkan daftar STAFF berdasarkan provinsi HEAD_STAFF
    
 }

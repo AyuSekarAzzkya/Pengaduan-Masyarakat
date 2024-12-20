@@ -15,21 +15,23 @@ use Illuminate\Support\Facades\Route;
 |-------------------------------------------------------------------------- 
 */
 
-Route::get('/', [UserController::class, 'index'])->name('login'); // Halaman login
-Route::post('/login', [UserController::class, 'postLoginOrRegistration'])->name('postLogin'); // Proses login
 
+Route::get('/', function () {
+    return view('welcome');
+});
+Route::get('/login', [UserController::class, 'index'])->name('login'); // Halaman login
+Route::post('/login/proses', [UserController::class, 'postLoginOrRegistration'])->name('postLogin'); // Proses login
+Route::get('/logout', [UserController::class, 'logout'])->name('logout');
 
 // GUEST-----------------------------------------------------------------------------------------------------------------------------------
 Route::middleware(['IsGuest'])->group(function () {
-    Route::get('/logout', [UserController::class, 'logout'])->name('logout');
-
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::post('/reports/{reportId}/vote', [ReportController::class, 'votes'])->name('reports.vote');
+    Route::post('reports/{id}/comment', [ReportController::class, 'comment'])->name('reports.comment');
+   
     Route::get('/reports/create', [ReportController::class, 'create'])->name('reports.create');
     Route::post('/reports', [ReportController::class, 'store'])->name('reports.store');
-    Route::post('/reports/{reportId}/vote', [ReportController::class, 'votes'])->name('reports.vote');
     Route::get('/reports/{id}', [ReportController::class, 'show'])->name('reports.show');
-    Route::post('reports/{id}/comment', [ReportController::class, 'comment'])->name('reports.comment');
-
     Route::get('/monitoring', [MonitoringController::class, 'index'])->name('reports.monitoring');
     Route::delete('/{id}', [MonitoringController::class, 'destroy'])->name('reports.destroy');
 });
@@ -59,5 +61,4 @@ Route::middleware(['IsHeadStaff'])->group(function () {
 
     Route::get('/headstaff/staff/create', [StaffProvinceController::class, 'createStaff'])->name('head.create');
     Route::post('/headstaff/staff/store', [StaffProvinceController::class, 'storeStaff'])->name('head.staff.store');
-
 });

@@ -5,42 +5,66 @@ namespace App\Http\Controllers;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        // Membuat query untuk mengambil laporan-laporan
-        $reportsQuery = Report::query();
-
-        // Cek apakah ada filter berdasarkan provinsi
-        if ($request->has('province')) {
-            $reportsQuery->where('province', $request->province);  // Pastikan kolomnya sesuai dengan yang ada di database
-        }
-
-        // Ambil laporan-laporan yang sesuai
-        $reports = $reportsQuery->get();
-
-        // Cek jika permintaan AJAX
+        $province = $request->query('province');
+        
+        // Ambil laporan berdasarkan provinsi jika ada
+        $reports = Report::when($province, function($query, $province) {
+            return $query->where('province', $province);  // Gunakan 'province' sesuai dengan kolom di database
+        })->with('user')  // Memuat relasi 'user' jika diperlukan
+        ->latest()
+        ->get();
+        
+        // Cek jika permintaan adalah AJAX
         if ($request->ajax()) {
             return response()->json([
                 'reports' => $reports
             ]);
         }
-
-        // Kirim data laporan ke view jika bukan permintaan AJAX
+        
+        // Jika bukan AJAX, kembalikan data laporan untuk view biasa
         return view('reports.index', compact('reports'));
     }
-
+    
+    
+    public function search(Request $request)
+    {
+        if ($request->ajax()) {
+            $provinceId = $request->input('province');
+        
+            // Pastikan parameter province valid
+            if (!$provinceId) {
+                return response()->json(['reports' => []]);
+            }
+        
+            // Ambil laporan berdasarkan 'province' (bukan 'province_id')
+            $reports = Report::where('province', $provinceId)  // Gantilah 'province' jika kolomnya memang bernama itu
+                ->with('user') // Relasi untuk mengambil email user
+                ->latest()
+                ->get();
+        
+            // Kirim data dalam format JSON
+            return response()->json(['reports' => $reports]);
+        }
+        
+        return response()->json(['error' => 'Invalid request'], 400);
+    }
+    
     public function show($id)
     {
-        $report = Report::with('comments.user')->findOrFail($id); // Eager load comments and their users
-
-        // Increment viewers each time the report is viewed
-        $report->increment('viewers');  // Pastikan kolom viewers ada di tabel laporan
-
+        $report = Report::findOrFail($id);
+    
+        // Increment viewers
+        $report->increment('viewers');
+    
         return view('reports.detail', compact('report'));
     }
+
 
     public function comment(Request $request, $id)
     {
@@ -48,25 +72,28 @@ class ReportController extends Controller
         $request->validate([
             'comment' => 'required|string|max:1000',
         ]);
-    
+
         // Temukan laporan berdasarkan ID
         $report = Report::findOrFail($id);
-    
+
         // Menyimpan komentar dengan ID user yang sedang login
         $report->comments()->create([
             'user_id' => auth()->id(),  // Mengambil ID pengguna yang sedang login
             'comment' => $request->comment,
         ]);
-    
+
         // Redirect ke halaman detail laporan dengan flash message
         return redirect()->route('reports.show', $id)->with('success', 'Komentar berhasil ditambahkan!');
     }
 
-    // Method untuk mendapatkan daftar provinsi dari database atau API
+    // Method untuk mendapatkan daftar provinsi dari database atau   
     public function getProvinces()
     {
         // Mengambil data provinsi dari API atau database
         // Jika mengambil dari database, sesuaikan query-nya
+        $response = Http::get('https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json');
+
+        return collect($response->json());  // Return the provinces as a collection
         return Report::select('province')->distinct()->get();
     }
 
@@ -87,26 +114,26 @@ class ReportController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'statement' => 'required|boolean',
         ]);
-    
+
         // Store image and report data
         $imagePath = $request->file('image')->store('images/reports', 'public');
         Report::create([
             'user_id' => Auth::id(),
             'description' => $request->description,
             'type' => $request->type,
-            'province' => $request->province,  
-            'regency' => $request->regency,  
-            'subdistrict' => $request->subdistrict,  
-            'village' => $request->village, 
+            'province' => $request->province,
+            'regency' => $request->regency,
+            'subdistrict' => $request->subdistrict,
+            'village' => $request->village,
             'voting' => json_encode([]),
             'viewers' => 0,  // Kolom viewers
             'image' => $imagePath,
             'statement' => $request->statement,
         ]);
-    
+
         return redirect()->route('reports.create')->with('success', 'Laporan berhasil dikirim!');
     }
-    
+
 
     public function votes($reportId)
     {
@@ -133,5 +160,4 @@ class ReportController extends Controller
         // Redirect kembali tanpa pesan
         return redirect()->back();
     }
-
 }

@@ -26,7 +26,7 @@
                         <p class="card-text"><strong>Deskripsi:</strong> {{ $report->description }}</p>
 
                         <!-- Alamat -->
-                        <p class="card-text">
+                        <p class="card-text" style="text-transform: lowercase;">
                             <strong>Lokasi:</strong> {{ $report->village_name }}, {{ $report->subdistrict_name }},
                             {{ $report->regency_name }}, {{ $report->province_name }}
                         </p>

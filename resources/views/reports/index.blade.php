@@ -55,7 +55,7 @@
                                                     <div class="d-flex justify-content-between align-items-center">
                                                         <!-- Jumlah View -->
                                                         <div>
-                                                            <i class="fas fa-eye"></i> {{ $report->views_count }}
+                                                            <i class="fas fa-eye"></i> {{ $report->viewers }}
                                                         </div>
 
                                                         <!-- Jumlah Vote -->
@@ -105,11 +105,12 @@
                             6. Pembuatan pengaduan dapat dilakukan pada halaman dibawah ini. <br>
                         </p>
                         <button class="btn btn-info">
-                            <a href="{{ route('reports.create') }}" style="color: black; text-decoration: none;">Buat Pengaduan</a>
+                            <a href="{{ route('reports.create') }}" style="color: black; text-decoration: none;">Buat
+                                Pengaduan</a>
                         </button>
                     </div>
                 </div>
-            </div>            
+            </div>
         </div>
 
         <!-- Section untuk Menampilkan Data Laporan -->
@@ -134,38 +135,37 @@
                 success: function(response) {
                     $.each(response, function(index, province) {
                         $('#province').append(`
-                            <option value="${province.id}">${province.name}</option>
-                        `);
+                    <option value="${province.id}">${province.name}</option>
+                `);
                     });
                 },
                 error: function() {
                     alert('Gagal memuat data provinsi');
                 }
             });
-    
+
             // Fetch reports dynamically when the search button is clicked
             $('#searchBtn').click(function() {
-                console.log("Tombol Cari diklik");
                 var provinceId = $('#province').val();
-    
+
                 if (!provinceId) {
                     alert("Pilih provinsi terlebih dahulu");
                     return;
                 }
-    
+
                 $.ajax({
-                    url: '{{ route('reports.index') }}',  // Gunakan route Laravel untuk permintaan
+                    url: '/reports', // URL untuk mendapatkan laporan
                     type: 'GET',
                     data: {
                         province: provinceId,
                         ajax: true
                     },
                     success: function(response) {
-                        console.log(response); // Menampilkan response di console untuk debugging
                         if (response.reports && response.reports.length > 0) {
                             renderReports(response.reports);
                         } else {
-                            $('#report-container').html('<p class="text-center">Tidak ada laporan ditemukan.</p>');
+                            $('#report-container').html(
+                                '<p class="text-center">Tidak ada laporan ditemukan.</p>');
                         }
                     },
                     error: function() {
@@ -173,62 +173,62 @@
                     }
                 });
             });
-    
+
             // Function to render reports dynamically
             function renderReports(reports) {
                 var reportsHtml = '';
                 $.each(reports, function(index, report) {
                     reportsHtml += `
-                        <div class="col-md-12 mb-2">
-                            <div class="card shadow-sm">
-                                <div class="row no-gutters">
-                                    <div class="col-md-4 mt-4">
-                                        <img src="/storage/${report.image}" class="d-block w-100" alt="Report Image" style="height: 180px; object-fit: cover;">
-                                    </div>
-                                    <div class="col-md-8">
-                                        <div class="card-body">
-                                            <h5 class="card-title">
-                                                <a href="{{ route('reports.show', '') }}/${report.id}" style="text-decoration: none; color: inherit;">
-                                                    ${report.description.substring(0, 120)}
-                                                </a>
-                                            </h5>   
-                                            <p class="card-text"><small>By: ${report.user.email}</small></p>
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <i class="fas fa-eye"></i> ${report.views_count}
-                                                </div>
-                                                <div>
-                                                    <i class="fas fa-heart"></i>
-                                                    <span id="voteCount-${report.id}">
-                                                        ${countVotes(report.voting)}
-                                                    </span>
-                                                </div>
-                                                <form action="/reports/vote/${report.id}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-link">
-                                                        <i class="fa-regular fa-heart" style="font-size: 20px;"></i>
-                                                        <br>Vote
-                                                    </button>
-                                                </form>
-                                            </div>
+                <div class="col-md-12 mb-2">
+                    <div class="card shadow-sm">
+                        <div class="row no-gutters">
+                            <div class="col-md-4 mt-4">
+                                <img src="/storage/${report.image}" class="d-block w-100" alt="Report Image" style="height: 180px; object-fit: cover;">
+                            </div>
+                            <div class="col-md-8">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <a href="/reports/${report.id}" style="text-decoration: none; color: inherit;">
+                                            ${report.description.substring(0, 120)}
+                                        </a>
+                                    </h5>   
+                                    <p class="card-text"><small>By: ${report.user.email}</small></p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-eye"></i> ${report.viewers}
                                         </div>
+                                        <div>
+                                            <i class="fas fa-heart"></i>
+                                            <span id="voteCount-${report.id}">
+                                                ${countVotes(report.voting)}
+                                            </span>
+                                        </div>
+                                        <form action="/reports/vote/${report.id}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-link">
+                                                <i class="fa-regular fa-heart" style="font-size: 20px;"></i>
+                                                <br>Vote
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    `;
+                    </div>
+                </div>
+            `;
                 });
-    
+
                 $('#report-container').html(reportsHtml);
             }
-    
+
             // Function to count votes from JSON
             function countVotes(voting) {
                 return voting ? voting.length : 0; // Safely count votes if available
             }
         });
     </script>
-    
-    
+
+
 
 @endsection

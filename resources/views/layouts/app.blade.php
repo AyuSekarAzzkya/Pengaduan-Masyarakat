@@ -80,11 +80,11 @@
                             @endif
                             <li class="nav-item">
                                 <a href="{{ route('logout') }}" class="nav-link">Logout</a>
-                            </li>       
+                            </li>
                         @endif
-                        
+
                     </ul>
-                   
+
                 </div>
             </div>
         </nav>
@@ -93,7 +93,7 @@
     <!-- ======= Main Content ======= -->
     <main id="main" class="main">
         <!-- Page Title and Breadcrumb -->
-        
+
 
         <!-- Dynamic Page Content -->
         @yield('content')
@@ -113,18 +113,26 @@
     </a>
 
     <!-- Vendor JS Files -->
-    <script src="{{ asset('Ltemplate/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('Ltemplate/assets/vendor/chart.js/chart.umd.js') }}"></script>
-    <script src="{{ asset('Ltemplate/assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
-    <!-- jQuery -->
+    <!-- Memuat jQuery terlebih dahulu -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Bootstrap JS -->
+    <!-- Memuat Bootstrap JS (pastikan hanya satu versi Bootstrap yang dimuat) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Memuat Chart.js -->
+    <script src="{{ asset('Ltemplate/assets/vendor/chart.js/chart.umd.js') }}"></script>
 
-    <!-- Main JS File -->
-    <script src="{{ asset('Ltemplate/assets/js/main.js') }}"></script>
+    <!-- Memuat Simple Datatables -->
+    <script src="{{ asset('Ltemplate/assets/vendor/simple-datatables/simple-datatables.js') }}"></script>
+
+    <!-- Memuat TinyMCE (pastikan memuat TinyMCE sebelum main.js) -->
+    <script src="https://cdn.tiny.cloud/1/your-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+
+    <!-- Memuat Main JS File setelah semua dependensi dimuat -->
+    <script src="{{ asset('Ltemplate') }}/assets/js/main.js"></script>
+
+    <!-- Memuat Bootstrap JS dari vendor lokal jika diperlukan -->
+    <script src="{{ asset('Ltemplate/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
     <!-- Additional Scripts -->
     @yield('scripts')

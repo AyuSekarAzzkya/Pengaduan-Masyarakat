@@ -26,7 +26,7 @@
                             <p class="card-text">{{ $report->details }}</p> <!-- Detail Laporan -->
                             <div class="d-flex justify-content-between align-items-center">
                                 <!-- Jumlah View -->
-                                <div><i class="fas fa-eye"></i> {{ $report->views_count }}</div>
+                                <div><i class="fas fa-eye"></i> {{ $report->viewers }}</div>
 
                                 <!-- Jumlah Vote -->
                                 <div><i class="fas fa-heart"></i> {{ count(json_decode($report->voting)) }}</div>
@@ -34,6 +34,9 @@
                             <div>
                                 <h1 style="margin-top: 3rem;">{{ $report->type }}</h1>
                             </div>
+
+
+                            
                         </div>
                     </div>
                 </div>
